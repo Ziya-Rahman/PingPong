@@ -19,6 +19,15 @@ function drawNet() {
     }
 }
 
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  
+// Call resizeCanvas() on page load and whenever the screen size changes
+window.addEventListener("load", resizeCanvas);
+window.addEventListener("resize", resizeCanvas);
+
 // Draw rectangle on canvas
 function drawRect(x, y, width, height, color) {
     context.fillStyle = color;
@@ -60,8 +69,38 @@ const com = createPaddle(canvas.width - paddleWidth, canvas.height / 2 - paddleH
 // Define ball object
 const ball = createBall(canvas.width / 2, canvas.height / 2, ballRadius, initialBallSpeed, initialBallSpeed, "WHITE");
 
-// Update user paddle position based on mouse movement
-canvas.addEventListener('mousemove', movePaddle);
+// Update user paddle position based on mouse/touch movement
+canvas.addEventListener("mousedown", handleMouseDown);
+canvas.addEventListener("mousemove", handleMouseMove);
+canvas.addEventListener("touchstart", handleMouseDown);
+canvas.addEventListener("touchmove", handleMouseMove);
+
+// Variables to store touch interaction state
+let isTouching = false;
+let touchY = 0;
+
+function handleMouseDown(e) {
+  isTouching = true;
+  touchY = e.type === "mousedown" ? e.clientY : e.touches[0].clientY;
+}
+
+function handleMouseMove(e) {
+  if (!isTouching) return;
+
+  const rect = canvas.getBoundingClientRect();
+  user.y = touchY - rect.top - user.height / 2;
+
+  // Prevent default touch scrolling behavior on mobile
+  e.preventDefault();
+}
+
+// End touch interaction when touch ends or mouse is released
+canvas.addEventListener("mouseup", handleMouseUp);
+canvas.addEventListener("touchend", handleMouseUp);
+
+function handleMouseUp() {
+  isTouching = false;
+}
 
 function movePaddle(event) {
     const rect = canvas.getBoundingClientRect();
