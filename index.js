@@ -19,15 +19,6 @@ function drawNet() {
     }
 }
 
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  
-// Call resizeCanvas() on page load and whenever the screen size changes
-window.addEventListener("load", resizeCanvas);
-window.addEventListener("resize", resizeCanvas);
-
 // Draw rectangle on canvas
 function drawRect(x, y, width, height, color) {
     context.fillStyle = color;
@@ -69,43 +60,39 @@ const com = createPaddle(canvas.width - paddleWidth, canvas.height / 2 - paddleH
 // Define ball object
 const ball = createBall(canvas.width / 2, canvas.height / 2, ballRadius, initialBallSpeed, initialBallSpeed, "WHITE");
 
-// Update user paddle position based on mouse/touch movement
-canvas.addEventListener("mousedown", handleMouseDown);
-canvas.addEventListener("mousemove", handleMouseMove);
-canvas.addEventListener("touchstart", handleMouseDown);
-canvas.addEventListener("touchmove", handleMouseMove);
-
+//Update user paddle position based on mouse/touch movement
 // Variables to store touch interaction state
 let isTouching = false;
 let touchY = 0;
 
-function handleMouseDown(e) {
+function handlePointerDown(e) {
   isTouching = true;
-  touchY = e.type === "mousedown" ? e.clientY : e.touches[0].clientY;
+  touchY = e.clientY || e.touches[0].clientY;
 }
 
-function handleMouseMove(e) {
+function handlePointerMove(e) {
   if (!isTouching) return;
 
   const rect = canvas.getBoundingClientRect();
-  user.y = touchY - rect.top - user.height / 2;
+  const newTouchY = e.clientY || e.touches[0].clientY;
+  const deltaY = newTouchY - touchY;
+  touchY = newTouchY;
+
+  user.y += deltaY;
 
   // Prevent default touch scrolling behavior on mobile
   e.preventDefault();
 }
 
-// End touch interaction when touch ends or mouse is released
-canvas.addEventListener("mouseup", handleMouseUp);
-canvas.addEventListener("touchend", handleMouseUp);
-
-function handleMouseUp() {
+function handlePointerUp() {
   isTouching = false;
 }
 
-function movePaddle(event) {
-    const rect = canvas.getBoundingClientRect();
-    user.y = event.clientY - rect.top - user.height / 2;
-}
+// Add event listeners for pointer events
+canvas.addEventListener("pointerdown", handlePointerDown);
+canvas.addEventListener("pointermove", handlePointerMove);
+canvas.addEventListener("pointerup", handlePointerUp);
+canvas.addEventListener("pointercancel", handlePointerUp);
 
 // Check for collision between ball and paddle
 function collision(b, p) {
